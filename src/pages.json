@@ -1,0 +1,97 @@
+{
+	"easycom": {
+		"autoscan": true,
+		"custom": {
+			"^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue",
+			"^checkPrice-(.*)": "@/pages/checkPrice-page/components/checkPrice-$1/checkPrice-$1.vue",
+			"^gather-tabbar-(.*)": "@/pages/gather-tabbar/components/gather-tabbar-$1/gather-tabbar-$1.vue"
+		}
+	},
+	"pages": [
+		{
+			"path": "pages/gather-tabbar/index",
+			"style": {
+				"navigationBarTitleText": "采集",
+				"disableScroll": false
+			}
+		},
+		{
+			"path": "pages/home-tabbar/index",
+			"style": {
+				"navigationBarTitleText": "首页",
+				"navigationBarBackgroundColor": "#476FB5",
+				"navigationStyle": "custom",
+				"disableScroll": false
+			}
+		},
+		{
+			"path": "pages/huanhua-tabbar/index",
+			"style": {
+				"navigationBarTitleText": "幻化区",
+				"navigationStyle": "custom"
+			}
+		},
+		
+		{
+			"path": "pages/houses-tabbar/index",
+			"style": {
+				"navigationBarTitleText": "房屋"
+			}
+		},
+		{
+			"path": "pages/fishCake-tabbar/index",
+			"style": {
+				"navigationBarTitleText": "鱼糕"
+			}
+		},
+		{
+			"path": "pages/checkPrice-page/index",
+			"style": {
+				"navigationBarTitleText": "查价",
+				"disableScroll": false
+			}
+		},
+		{
+			"path": "pages/fflogs-page/index",
+			"style": {
+				"navigationBarTitleText": "fflogs"
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "uni-app",
+		"navigationBarBackgroundColor": "#476FB5",
+		"backgroundColorTop": "#000000",
+		"backgroundColorBottom": "#000000",
+		"navigationStyle": "custom",
+		"app-plus": {
+			"scrollIndicator": "none"
+		}
+	},
+	"tabBar": {
+		"backgroundColor": "#ffffff",
+		"list": [
+			{
+				"pagePath": "pages/huanhua-tabbar/index",
+				"text": ""
+			},
+			{
+				"pagePath": "pages/houses-tabbar/index",
+				"text": ""
+			},
+			{
+				"pagePath": "pages/home-tabbar/index",
+				"text": ""
+			},
+			{
+				"pagePath": "pages/gather-tabbar/index",
+				"text": ""
+			},
+			{
+				"pagePath": "pages/fishCake-tabbar/index",
+				"text": ""
+			}
+		]
+	}
+}

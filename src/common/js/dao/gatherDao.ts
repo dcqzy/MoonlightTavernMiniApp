@@ -1,85 +1,50 @@
 class gatherDao {
+    id:number;
     name: string[] // 采集点名字
-    startTime: number // 采集点开始时间1 ET时间
-    endTime: number // 才几点结束时间1 ET时间
+    startTime: number[] // 采集点开始时间1 ET时间
+    endTime: number[] // 才几点结束时间1 ET时间
     location: string // 采集点位置
     coordinate:Map<string,number>
     isAppear: boolean // 是否显示
-    defaultDuration: number // 默认持续时间 单位毫秒
-    duration:number // 真实持续时间 单位毫秒
-    defaultCdTime:number // 默认间隔时间
-     // cdTime:number // 真实间隔时间 单位毫秒
+    duration:Date // 真实持续时间 单位毫秒
     imageUrl:string // 地图url地址
     job:string // 职业
     level:number // 等级
     time:number // 总倒计时时间
+    version:number // 版本
+    isCollect:boolean // 收藏
+
 
     // 构造方法
-    constructor (name:string[] = [],job:string,level:number, startTime:number, endTime:number, location:string = '',coordinate:Map<string,number>, isAppear:boolean = false, imageUrl:string) {
+    constructor (id:number,name:string[] = [],job:string,level:number, startTime:number[], endTime:number[], location:string = '',coordinate:Map<string,number>, isAppear:boolean = false, imageUrl:string, version:number) {
+        this.id =id;
         this.name = name;
         this.job = job;
         this.level = level;
-        
+        this.startTime =startTime;
         this.endTime = endTime;
         this.location = location;
         this.coordinate = coordinate;
         this.isAppear = isAppear;
-        this.duration = 0;
-        // this.cdTime = 0;
+        this.duration = undefined!;
         this.imageUrl = imageUrl;
         this.time = 0;
-
-        // if (this.startTime.length != 0 && this.endTime.length != 0) {
-        //     if ( endTime[0] == 0) {
-        //         // 计算默认持续时间
-        //         this.defaultDuration = ((24 - startTime[0]) * 60 * 60  * 1000) ;
-        //         // 计算间隔时间
-        //         this.defaultCdTime = ((24 - startTime[1]) * 60 * 60 * 1000)
-        //     } else {
-        //         this.defaultDuration = ((endTime[0] - startTime[0]) * 60 * 60 * 1000);
-        //         this.defaultCdTime = ((endTime[0] - startTime[1]) * 60 * 60 * 1000)
-        //     }
-        // } else {
-        //     this.defaultDuration = 0;
-        //     this.defaultCdTime = 0;
-        // }
-
-        // 先进行判断 传进来的时间是否大于12
-        if (startTime >= 12) {
-            this.startTime = startTime - 12;
-        } else {
-            this.startTime = startTime;
-        }
-
-        if (endTime >= 12) {
-            this.endTime = endTime - 12;
-        } else {
-            this.endTime = endTime;
-        }
-
-        // 计算默认持续时间
-        if (this.endTime == 0 && this.startTime > this.endTime) {
-            this.defaultDuration = Math.abs((12 - this.startTime) * 60 * 60 * 1000);
-        } else {
-            this.defaultDuration = Math.abs((this.endTime - this.startTime) * 60 * 60 * 1000);
-        }
-
-        
-        
-        // 计算默认间隔时间
-        this.defaultCdTime =Math.abs((this.endTime == 0?12:this.endTime - this.startTime - 12) * 60 * 60 * 1000); 
-        
-
+        this.version = version;
+        this.isCollect = false;
     }
     
     // Get方法
+    getId():number {
+        return this.id;
+    }
+
     getName():string[] {
         return this.name;
     }
-    getStartTime():number {
+    getStartTime():number[] {
         return this.startTime;
     }
-    getEndTime():number {
+    getEndTime():number[] {
         return this.endTime;
     }
     getLocation():string {
@@ -91,12 +56,8 @@ class gatherDao {
     getIsAppear():boolean {
         return this.isAppear;
     }
-    getDuration():number {
+    getDuration():Date {
         return this.duration;
-    }
-    // 获取采集点默认持续时间
-    getDefaultDuration():number {
-        return this.defaultDuration;
     }
 
     getImageUrl():string {
@@ -108,21 +69,31 @@ class gatherDao {
     getLevel():number {
         return this.level
     }
-    getDefaultCdTime():number{
-        return this.defaultCdTime
-    }
+
     getTime():number {
         return this.time;
     }
 
+    getVersion():number {
+        return this.version;
+    }
+
+    getIsCollect():boolean {
+        return this.isCollect;
+    }
+
     // Set方法
+    setId(id:number) {
+        this.id =id;
+    }
+
     setName(name:string[]) {
         this.name = name;
     }
-    setStartTime(startTime: number) {
+    setStartTime(startTime: number[]) {
         this.startTime = startTime;
     }
-    setEndTime(endTime: number) {
+    setEndTime(endTime: number[]) {
         this.endTime = endTime;
     }
     setLocation(location:string) {
@@ -134,8 +105,8 @@ class gatherDao {
     setIsAppear(isAppear:boolean) {
         this.isAppear = isAppear;
     }
-    setDuration(time:number) {
-        this.duration = time;
+    setDuration(date?:Date) {
+        this.duration = date!;
     }
     setImageUrl(url:string) {
         this.imageUrl = url
@@ -146,14 +117,14 @@ class gatherDao {
     setLevel(level:number) {
         this.level = level
     }
-    setDefaultCdTime(time:number){
-        this.defaultCdTime= time;
-    }
-    // setCdTime(time:number){
-    //     this.cdTime = time;
-    // }
     setTime(time:number) {
         this.time = time;
+    }
+    setVersion(version:number) {
+        this.version = version;
+    }
+    setIsCollect(isCollect:boolean) {
+        this.isCollect = isCollect;
     }
 }
 

@@ -1,58 +1,49 @@
 <template>
-    <view class="box" :class="(data.isAppear ? 'box-true-show' : 'box-false-show')"
-        @click="clickView(data.imageUrl, data.location, data.coordinate)" @longpress="test">
+    <view class="box" :class="(gather.isAppear ? 'box-true-show' : 'box-false-show')"
+        @click="clickView(gather.imageUrl, gather.location, gather.coordinate)" @longpress="longPress">
         <view>
             <view
                 style="display: grid; grid-template-columns: 1fr 1px 100px 1px 50px; padding-top: 10px; padding-bottom: 10px; gap: 5px;">
                 <view class="item-text" :style="systemWidth >= 350 ? boxTextSystemWidth400 : boxTextSystemWidth300">
-                    <view style="margin-top: 2px; margin-bottom: 2px;" v-for="(names, index) in props.data.name"
-                        :key="index">
+                    <view style="margin-top: 2px; margin-bottom: 2px;" v-for="(names, index) in gather.name" :key="index">
                         <text>{{ names }}</text>
                     </view>
 
                 </view>
                 <view style="height: 100%; opacity: 0.41;"
-                    :style="{ backgroundColor: (data.isAppear ? '#FFFFFF' : '#000000') }">
+                    :style="{ backgroundColor: (gather.isAppear ? '#FFFFFF' : '#000000') }">
                 </view>
                 <view class="item-text">
                     <view style="text-align: center;">
                         <view :style="systemWidth >= 350 ? boxTextSystemWidth400 : boxTextSystemWidth300">
-                            <text>{{ data.location }}</text>
+                            <text>{{ gather.location }}</text>
                         </view>
                         <view style="opacity: 0.59;"
                             :style="systemWidth >= 350 ? boxTagSystemWidth400 : boxTagSystemWidth300">
-                            <text>{{ "x:" + data.coordinate.get('x') + "y:" + data.coordinate.get('y') }}</text>
+                            <text>{{ "x:" + gather.coordinate.get('x') + "y:" + gather.coordinate.get('y') }}</text>
                         </view>
                     </view>
                     <view style="text-align: center; margin-top: 10px;">
                         <view :style="systemWidth >= 350 ? boxTextSystemWidth400 : boxTextSystemWidth300">
-                            <text>{{ "等级" + props.data.level }}</text>
+                            <text>{{ "等级" + gather.level }}</text>
                         </view>
                         <view style="opacity: 0.59;"
                             :style="systemWidth >= 350 ? boxTagSystemWidth400 : boxTagSystemWidth300">
-                            <text>{{ props.data.job }}</text>
+                            <text>{{ gather.job }}</text>
                         </view>
                     </view>
 
                 </view>
                 <view style="height: 100%; opacity: 0.41;"
-                    :style="{ backgroundColor: (data.isAppear ? '#FFFFFF' : '#000000') }">
+                    :style="{ backgroundColor: (gather.isAppear ? '#FFFFFF' : '#000000') }">
                 </view>
                 <view class="time-box">
-                    
-                    <view style="height: 0; width: 0; position: relative; top: -5px;" v-if="collect">
-                        <image
-                            src="@/static/collect-true-icon.png"
-                            mode="aspectFit"
-                            style="height: 20px; width: 20px;"
-                        />
+
+                    <view style="height: 0; width: 0; position: relative; top: -5px;" v-if="gather.getIsCollect()">
+                        <image src="@/static/collect-true-icon.png" mode="aspectFit" style="height: 20px; width: 20px;" />
                     </view>
                     <view style="height: 0px; width: 0px; position: relative; top: -5px;" v-else>
-                        <image
-                            src="@/static/collect-false-icon.png"
-                            mode="aspectFit"
-                            style="height: 20px; width: 20px;"
-                        />
+                        <image src="@/static/collect-false-icon.png" mode="aspectFit" style="height: 20px; width: 20px;" />
                     </view>
                     <view class="time-text">
                         <text>{{ mm + ':' + ss }}</text>
@@ -118,9 +109,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, type Ref, defineProps, onMounted, onBeforeUnmount, getCurrentInstance,onBeforeMount } from 'vue'
-import { onLoad,onShow,onReady } from '@dcloudio/uni-app';
+import { ref, type Ref, defineProps, onMounted, onBeforeUnmount, getCurrentInstance, onBeforeMount } from 'vue'
+import { onLoad, onShow, onReady } from '@dcloudio/uni-app';
 import type gatherDao from '@/common/js/dao/gatherDao'
+import { useLocalTimeStore } from '@/stores/localTime';
+import { useGatherArrayStore } from '@/stores/gatherArray';
+import { isTemplateElement } from '@babel/types';
 
 // 获取屏幕的宽度
 const systemWidth = uni.getSystemInfoSync().screenWidth;
@@ -140,13 +134,14 @@ const boxTagSystemWidth300 = ref({
 })
 
 const props = defineProps<{
-    data: gatherDao
-    value: number
+    id: number
 }>()
 
-const popup = ref(null)
+const localTimeStore = useLocalTimeStore();
 
-const testValue = ref(0);
+const gatherArrayStore = useGatherArrayStore();
+
+const popup = ref(null)
 
 const popupImageUrl = ref("");
 
@@ -154,113 +149,92 @@ const popupLocation = ref("");
 
 const popupCoordinate: Ref<Map<string, number>> = ref(new Map);
 
-// onLoad(() => {
-//     console.log("触发了")
-//     setTimeout(() => {
-//         let defTime = props.data.getTime() / 20.57
-//         console.log('defTime:', defTime)
-//         let time = props.data.getDuration() / 20.57
-//         console.log("time:", props.data.getDuration())
-//         let ss = defTime / 100
-//         console.log('ss:', ss)
-//         testValue.value = Math.trunc((time / defTime) * 100)
-//         console.log('testValue.value1:', testValue.value)
+const gather = searchGatherListById(props.id);
 
-//         setInterval(() => {
-//             // console.log("测试进度条动画")
-//             if (testValue.value == 100) {
+// 监听现实时间来计算倒计时
+localTimeStore.$subscribe(() => {
+    // gather.value = searchGatherListById(props.id)
+    // 获取现实时间的毫秒数
+    let nowTimeMillisecond = localTimeStore.nowTime?.getTime();
+    // 获取采集物的endTime的毫秒数
+    let endTimeMillisecond = gather.getDuration().getTime();
 
-//                 testValue.value = 0
-//                 return
-//             }
-//             testValue.value++
-//             console.log(testValue.value)
-//         }, ss)
-//     }, 1000)
-// })
+    if (endTimeMillisecond - nowTimeMillisecond! > 0) {
+        // 计算时间
+        let duration = new Date(new Date().setTime(endTimeMillisecond - nowTimeMillisecond!))
+        console.log(endTimeMillisecond - nowTimeMillisecond!)
+        mm.value = duration.getMinutes();
+        ss.value = duration.getSeconds();
+    } else {
+        // 将倒计时清零
+        deleteGatherDuartion(props.id)
+        console.log("zoule:",gatherArrayStore.gatherList)
+        mm.value = 0;
+        ss.value = 0;
+    }
+
+
+})
+
+// 根据id从采集数组里获取指定采集物的结束时间
+function searchGatherListById(id: number): gatherDao {
+
+    let gather;
+
+    gatherArrayStore.gatherList?.forEach((item, index) => {
+        if (item.getId() == props.id) {
+            gather = item;
+        }
+    })
+    return gather;
+}
+
+function deleteGatherDuartion(id: number) {
+    gatherArrayStore.gatherList?.forEach((item, index) => {
+        if (item.getId() == props.id) {
+            item.setDuration(undefined);
+        }
+    })
+}
+
 
 const mm = ref(0);
 const ss = ref(0);
-let timer = 0;
-let timer2 = 0;
 
-const instance = getCurrentInstance();
-
-onReady(()=>{
-    console.log("触发了load")
-    timer2 = setTimeout(()=>{
-        console.log("触发了1",props.data.location,":",props.value)
-        let countDown = new Date(Math.floor(props.value / 20.57));
-        //    console.log(new Date(Math.floor(7200000 / 20.57)).getTime())
-        mm.value = countDown.getUTCMinutes();
-        ss.value = countDown.getUTCSeconds();
-        clearTimeout(timer2);
-        timer2 = 0;
-    },1000)
-    
-    timer = setInterval(() => {
-        // console.log("触发了timer");
-        if (mm.value == 0) {
-            if (ss.value > 0) {
-                ss.value--;
-            } else {
-                console.log("消除timer前",timer)
-                clearInterval(timer);
-                timer = 0;
-                console.log("消除timer后",timer)
-            }
-        }
-        else if (mm.value != 0) {
-            if (ss.value > -1) {
-                ss.value--;
-            }
-            if (ss.value == -1) {
-                mm.value--;
-                ss.value = 59;
-            }
-        }
-    }, 1000)
-
-    // timer = setInterval(()=>{
-    //     // 当前时间的时间戳
-    //     let nowTime = new Date().getTime()
-
-    //     // console.log(props.value - nowTime)
-    //     // 当前倒计时的分钟
-    //     mm.value = new Date(new Date().setTime(props.value - nowTime)).getUTCMinutes();
-    //     ss.value = new Date(new Date().setTime(props.value - nowTime)).getUTCSeconds();
-
-    // },0)
-})
-
-onBeforeMount(() => {
-    
-//    timer2 = setTimeout(() => {
-//         console.log("aaa:", props.value,":",props.data.location)
-//         // 解析倒计时
-//         let countDown = new Date(Math.floor(props.value / 20.57));
-//         //    console.log(new Date(Math.floor(7200000 / 20.57)).getTime())
-//         MM.value = countDown.getUTCMinutes();
-//         SS.value = countDown.getUTCSeconds();
-
-//     }, 600)
-
-    
-
-})
 
 const collect = ref(false);
 
-function test() {
-    console.log("长按了")
+function longPress() {
+    let list = uni.getStorageSync("gatherCollectList")
+    // 循环数组 修改收藏变量
+    gatherArrayStore.gatherList?.forEach((item)=>{
+        // debugger;
+        if (item.getId() == props.id) {
+            item.setIsCollect(!item.getIsCollect());
+            if (item.getIsCollect()) {
+                if (list == '') {
+                    uni.setStorageSync("gatherCollectList",[props.id]);
+                } else {
+                    list.push(props.id)
+                    uni.setStorageSync("gatherCollectList", list);
+                }
+            } else {
+                if (list != '') {
+                    list.forEach((item, index) => {
+                        if( list[index] == props.id) {
+                            list.splice(index,1);
+                        }
+                    });
+                    uni.setStorageSync("gatherCollectList", list)
+                }
+            }
+        }
+    })
+
     collect.value = !collect.value
 }
 
-onBeforeUnmount(() => {
-    console.log("触发了2",props.data.location)
-    // clearInterval(timer);
-    // clearTimeout(timer2);
-})
+
 
 
 function clickView(imageUrl: string, location: string, coordinate: Map<string, number>) {
@@ -298,7 +272,8 @@ function clickView(imageUrl: string, location: string, coordinate: Map<string, n
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100%; width: 100%;
+    height: 100%;
+    width: 100%;
     /* white-space: nowrap; */
     /* color: #FFFFFF; */
 }
@@ -316,7 +291,8 @@ function clickView(imageUrl: string, location: string, coordinate: Map<string, n
     /* color: #FFFFFF; */
     display: flex;
     justify-content: center;
-    height: 100%; width: 100%;
+    height: 100%;
+    width: 100%;
 }
 
 .tag-text {

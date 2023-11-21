@@ -3,7 +3,7 @@ const url_all = {
     'PORD': ''
 }
 
-let BASEURL = (process.env.NODE_ENV == 'development' ? url_all['DEV'] : url_all["PORD"])
+let BASEURL = url_all['DEV']
 
 export const request = (options = {}) => {
     return new Promise( (resolve,reject)=>{

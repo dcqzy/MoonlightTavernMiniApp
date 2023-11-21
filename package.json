@@ -54,7 +54,7 @@
     "@dcloudio/uni-mp-xhs": "3.0.0-3090620231104002",
     "@dcloudio/uni-quickapp-webview": "3.0.0-3090620231104002",
     "@dcloudio/uni-ui": "^1.4.28",
-    "pinia": "^2.0.33",
+    "pinia": "2.0.36",
     "taro-ui-vue3": "^1.0.0-alpha.21",
     "vue": "3.2.47",
     "vue-i18n": "9.7.0"
